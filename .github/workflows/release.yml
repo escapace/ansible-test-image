@@ -1,0 +1,32 @@
+name: release
+on:
+  schedule:
+    - cron: '10 16 * * 2'
+  repository_dispatch:
+    types: [release]
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Set the value
+        id: step_one
+        run: |
+          echo "docker_tag=$(date +'%Y%m%d')" >> $GITHUB_ENV
+      - name: build
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}:latest .
+          docker tag ghcr.io/${{ github.repository }}:latest ghcr.io/${{ github.repository }}:${{ env.docker_tag }}
+      - name: docker login
+        env:
+          CONTAINER_REGISTRY_TOKEN: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
+        run: |
+          echo ${{ secrets.CONTAINER_REGISTRY_TOKEN }} | docker login ghcr.io -u escapace --password-stdin
+      - name: release
+        run: |
+          docker push ghcr.io/${{ github.repository }}:latest
+          docker push ghcr.io/${{ github.repository }}:${{ env.docker_tag }}
+
+
