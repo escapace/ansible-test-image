@@ -20,10 +20,8 @@ jobs:
           docker build -t ghcr.io/${{ github.repository }}:latest .
           docker tag ghcr.io/${{ github.repository }}:latest ghcr.io/${{ github.repository }}:${{ env.docker_tag }}
       - name: docker login
-        env:
-          CONTAINER_REGISTRY_TOKEN: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
         run: |
-          echo ${{ secrets.CONTAINER_REGISTRY_TOKEN }} | docker login ghcr.io -u escapace --password-stdin
+          echo ${{ secrets.PACKAGES_WRITE_TOKEN }} | docker login ghcr.io -u escapace --password-stdin
       - name: release
         run: |
           docker push ghcr.io/${{ github.repository }}:latest
