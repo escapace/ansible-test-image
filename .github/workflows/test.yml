@@ -19,12 +19,7 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - name: Set the value
-        id: step_one
-        run: |
-          echo "docker_tag=$(date +'%Y%m%d')" >> $GITHUB_ENV
       - name: build
         run: |
           docker build -t ghcr.io/${{ github.repository }}:latest .
-          docker tag ghcr.io/${{ github.repository }}:latest ghcr.io/${{ github.repository }}:${{ env.docker_tag }}
 

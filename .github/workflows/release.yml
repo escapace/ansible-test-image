@@ -11,20 +11,22 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - name: Set the value
+      - name: set tag
         id: step_one
         run: |
           echo "docker_tag=$(date +'%Y%m%d')" >> $GITHUB_ENV
+      - name: docker login
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: build
         run: |
+          docker pull ghcr.io/${{ github.repository }}:latest ||  true
           docker build -t ghcr.io/${{ github.repository }}:latest .
           docker tag ghcr.io/${{ github.repository }}:latest ghcr.io/${{ github.repository }}:${{ env.docker_tag }}
-      - name: docker login
-        run: |
-          echo ${{ secrets.PACKAGES_WRITE_TOKEN }} | docker login ghcr.io -u escapace --password-stdin
       - name: release
         run: |
           docker push ghcr.io/${{ github.repository }}:latest
           docker push ghcr.io/${{ github.repository }}:${{ env.docker_tag }}
-
-
