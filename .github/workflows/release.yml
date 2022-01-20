@@ -1,5 +1,10 @@
 name: release
 on:
+  push:
+    branches:
+      - trunk
+    paths:
+      - Dockerfile
   schedule:
     - cron: '10 16 * * 2'
   repository_dispatch:
@@ -21,12 +26,25 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: setup qemu
+        uses: docker/setup-qemu-action@v1
+      - name: docker buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+      - name: cache buildx
+        uses: actions/cache@v2.1.7
+        with:
+          path: ~/.buildx
+          key: ${{ runner.os }}-node-${{ hashFiles('**/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
       - name: build
-        run: |
-          docker pull ghcr.io/${{ github.repository }}:latest ||  true
-          docker build -t ghcr.io/${{ github.repository }}:latest .
-          docker tag ghcr.io/${{ github.repository }}:latest ghcr.io/${{ github.repository }}:${{ env.docker_tag }}
-      - name: release
-        run: |
-          docker push ghcr.io/${{ github.repository }}:latest
-          docker push ghcr.io/${{ github.repository }}:${{ env.docker_tag }}
+        run: >-
+          docker buildx build
+          --cache-from type=local,src=$HOME/.buildx
+          --cache-to   type=local,dest=$HOME/.buildx,mode=max
+          --platform linux/amd64,linux/arm64/v8
+          --tag ghcr.io/${{ github.repository }}:${{ github.sha }}-${{ env.docker_tag }}
+          --push .
