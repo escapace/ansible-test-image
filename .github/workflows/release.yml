@@ -16,10 +16,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - name: set tag
-        id: step_one
-        run: |
-          echo "docker_tag=$(date +'%Y%m%d')" >> $GITHUB_ENV
+      - run: echo "docker_date=$(date +'%Y%m%d')" >> $GITHUB_ENV
+      - run: echo "docker_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
       - name: docker login
         uses: docker/login-action@v1
         with:
@@ -46,5 +44,6 @@ jobs:
           --cache-from type=local,src=$HOME/.buildx
           --cache-to   type=local,dest=$HOME/.buildx,mode=max
           --platform linux/amd64,linux/arm64/v8
-          --tag ghcr.io/${{ github.repository }}:${{ github.sha }}-${{ env.docker_tag }}
+          --tag ghcr.io/${{ github.repository }}:${{ env.docker_sha }}-${{ env.docker_date }}
+          --tag ghcr.io/${{ github.repository }}:latest
           --push .
