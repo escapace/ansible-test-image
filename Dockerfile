@@ -8,4 +8,4 @@ RUN dnf -y update && \
 
 RUN sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers
 
-ENTRYPOINT ["/bin/bash"]
+CMD ["/bin/bash"]
