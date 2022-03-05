@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - run: echo "docker_date=$(date +'%Y%m%d')" >> $GITHUB_ENV
       - run: echo "docker_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
       - name: docker login
